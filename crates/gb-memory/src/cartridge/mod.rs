@@ -3,4 +3,5 @@
 
 pub mod builder;
 pub mod errors;
+pub mod header;
 pub mod mbc;

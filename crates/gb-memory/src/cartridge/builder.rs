@@ -7,11 +7,13 @@ use std::path::PathBuf;
 
 use crate::MemoryAccess;
 use crate::cartridge::errors::CartridgeError;
+use crate::cartridge::header::{CartridgeType, Header};
 use crate::cartridge::mbc::mbc0::MBC0;
 use crate::cartridge::mbc::mbc1::MBC1;
 
 pub struct Cartridge
 {
+    pub header: Header,
     mbc: Box<dyn MemoryAccess>,
 }
 
@@ -26,15 +28,14 @@ impl Cartridge
         let mut buf = Vec::new();
         File::open(path.into())?.read_to_end(&mut buf)?;
 
-        let ram_banks = check_ram_banks(&buf);
+        let header = Header::new(&buf)?;
 
-        let mbc = match buf[0x147] {
-            0x00 => Box::new(MBC0::new(buf)) as Box<dyn MemoryAccess>,
-            0x01..=0x03 => Box::new(MBC1::new(buf, ram_banks)),
-            _ => return Err(CartridgeError::Rom("Unsupported MBC type.")),
+        let mbc: Box<dyn MemoryAccess> = match header.cartridge_type {
+            CartridgeType::Mbc0 => Box::new(MBC0::new(buf)),
+            _ => Box::new(MBC1::new(buf, header.ram_banks)),
         };
 
-        Ok(Self { mbc })
+        Ok(Self { header, mbc })
     }
 }
 
@@ -48,19 +49,5 @@ impl MemoryAccess for Cartridge
     fn write_byte(&mut self, addr: u16, val: u8)
     {
         self.mbc.write_byte(addr, val);
-    }
-}
-
-fn check_ram_banks(rom: &[u8]) -> usize
-{
-    match rom[0x147] {
-        0x02 | 0x03 => match rom[0x149] {
-            1 | 2 => 1,
-            3 => 4,
-            4 => 16,
-            5 => 8,
-            _ => 0,
-        },
-        _ => 0,
     }
 }

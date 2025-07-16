@@ -9,6 +9,6 @@ pub enum CartridgeError
     #[error("Problem with file system: {0}.")]
     FileSystem(#[from] std::io::Error),
 
-    #[error("Problem with the rom: {0}.")]
-    Rom(&'static str),
+    #[error("Problem with rom header: {0}")]
+    Header(&'static str),
 }
