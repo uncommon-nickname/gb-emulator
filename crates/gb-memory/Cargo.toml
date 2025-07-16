@@ -5,3 +5,4 @@ edition = "2024"
 license-file = "LICENSE.md"
 
 [dependencies]
+thiserror.workspace = true

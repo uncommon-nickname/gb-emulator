@@ -19,6 +19,20 @@ impl<const START_ADDR: u16, const END_ADDR: u16> MemoryChunk<START_ADDR, END_ADD
         Self { data }
     }
 
+    pub fn from_slice(data: &[u8]) -> Self
+    {
+        Self::from_vec(data.to_vec())
+    }
+
+    pub fn from_vec(mut data: Vec<u8>) -> Self
+    {
+        assert!(data.len() <= Self::SIZE);
+
+        data.resize_with(Self::SIZE, Default::default);
+
+        Self { data }
+    }
+
     #[inline]
     fn addr_to_idx(&self, addr: u16) -> usize
     {
@@ -34,26 +48,9 @@ impl<const START_ADDR: u16, const END_ADDR: u16> MemoryAccess for MemoryChunk<ST
         self.data[idx]
     }
 
-    fn read_word(&self, addr: u16) -> u16
-    {
-        let low = self.read_byte(addr) as u16;
-        let high = self.read_byte(addr + 1) as u16;
-
-        low | (high << 8)
-    }
-
     fn write_byte(&mut self, addr: u16, val: u8)
     {
         let idx = self.addr_to_idx(addr);
         self.data[idx] = val;
-    }
-
-    fn write_word(&mut self, addr: u16, val: u16)
-    {
-        let low = (val & 0xFF) as u8;
-        let high = (val >> 8) as u8;
-
-        self.write_byte(addr, low);
-        self.write_byte(addr + 1, high);
     }
 }

@@ -3,3 +3,4 @@ resolver = "3"
 members = ["crates/gb-core", "crates/gb-memory"]
 
 [workspace.dependencies]
+thiserror = { version = "2.0.12", default-features = false }
