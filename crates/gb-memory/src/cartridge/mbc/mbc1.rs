@@ -2,90 +2,102 @@
 // GNU General Public License v3.0 (see LICENSE.md or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 use crate::MemoryAccess;
+use crate::cartridge::header::Header;
 use crate::chunk::MemoryChunk;
 
+// NOTE: 17.07.2025
+// This will not work for larger cartridges with alternate wiring.
+// Very few games actually used it, so for now let's keep it simple.
+
 #[derive(Debug)]
-pub struct MBC1
+pub struct Mbc1
 {
-    banking_mode: u8,
-
-    rom_bank: u8,
-    static_rom: MemoryChunk<0x0000, 0x3FFF>,
-    swap_rom: Vec<MemoryChunk<0x4000, 0x7FFF>>,
-
     ram_enabled: bool,
-    ram_bank: u8,
-    swap_ram: Vec<MemoryChunk<0xA000, 0xBFFF>>,
+    // The banking mode can be in two states. Rom banking means
+    // that 0x0000 - 0x3FFF address space points to the bank 0
+    // of rom and bank 0 of ram. When set to ram banking, the
+    // 0x0000 - 0x3FFF address space can be mapped to different
+    // rom bank and the 0xA000 - 0xBFFF to a different ram bank.
+    in_ram_banking_mode: bool,
+    // 5-bit register keeping the rom bank number from the
+    // 0x4000 - 0x7FFF region. The value it can hold can never
+    // be zero. The range is [1, 31].
+    rom_lower_rom_bits: u8,
+    // If the 5 bits are not sufficient the secondary bank register
+    // can be used providing additional two bits.
+    ram_upper_rom_bits: u8,
+    // First 16 KiB of the cartridge, which is always mapped
+    // to the 0x0000 - 0x3FFF address space.
+    rom_0x: MemoryChunk<0x0000, 0x3FFF>,
+    // Rom banks which can be swapped, all of them are mapped
+    // to the same address space and only once can be accessed
+    // at the same time.
+    rom: Vec<MemoryChunk<0x4000, 0x7FFF>>,
+    // Ram banks which can be swapped, all of them are mapped
+    // to the same address space.
+    ram: Vec<MemoryChunk<0xA000, 0xBFFF>>,
 }
 
-impl MBC1
+impl Mbc1
 {
-    pub fn new(rom: Vec<u8>, ram_banks: usize) -> Self
+    pub fn new(header: &Header, raw_rom: Vec<u8>) -> Self
     {
-        const SIZE: usize = MemoryChunk::<0x0000, 0x3FFF>::SIZE;
+        const CHUNK: usize = MemoryChunk::<0x0000, 0x3FFF>::SIZE;
 
-        let static_rom = MemoryChunk::from_slice(&rom[0..SIZE]);
+        let rom_0x = MemoryChunk::from_slice(&raw_rom[..CHUNK]);
+        let ram = (0..header.ram_banks).map(|_| MemoryChunk::new()).collect();
 
-        let swap_rom = rom[SIZE..]
-            .chunks(SIZE)
+        let rom: Vec<MemoryChunk<16384, 32767>> = raw_rom[CHUNK..]
+            .chunks(CHUNK)
             .map(MemoryChunk::from_slice)
             .collect();
 
-        let swap_ram = (0..ram_banks).map(|_| MemoryChunk::new()).collect();
+        assert_eq!(rom.len() + 1, header.rom_banks);
 
         Self {
-            banking_mode: 0,
-            rom_bank: 1,
-            static_rom,
-            swap_rom,
             ram_enabled: false,
-            ram_bank: 0,
-            swap_ram,
+            in_ram_banking_mode: false,
+            rom_lower_rom_bits: 0x01,
+            ram_upper_rom_bits: 0x00,
+            rom_0x,
+            rom,
+            ram,
+        }
+    }
+
+    #[inline]
+    fn current_rom_bank(&self) -> usize
+    {
+        let upper_bits = match self.in_ram_banking_mode {
+            true => 0x00,
+            false => self.ram_upper_rom_bits,
+        };
+        (self.rom_lower_rom_bits | (upper_bits << 5)) as usize
+    }
+
+    #[inline]
+    fn current_ram_bank(&self) -> usize
+    {
+        match self.in_ram_banking_mode {
+            true => self.ram_upper_rom_bits as usize,
+            false => 0x00,
         }
     }
 }
 
-impl MBC1
-{
-    fn read_rom_x0(&self, addr: u16) -> u8
-    {
-        // In banking mode `0` we simply read from the static `ROM` data.
-        if self.banking_mode == 0 {
-            return self.static_rom.read_byte(addr);
-        }
-        // In banking mode `1` with extended `ROM` banking, we can have
-        // some data mapped here, specified by three bits in the `rom_bank`.
-        let bank = (self.rom_bank & 0xE0) as usize;
-
-        if bank == 0 {
-            self.static_rom.read_byte(addr)
-        } else {
-            self.swap_rom[bank - 1].read_byte(addr & 0x3FFF)
-        }
-    }
-
-    fn rom_banks(&self) -> u8
-    {
-        (self.swap_rom.len() + 1) as u8
-    }
-}
-
-impl MemoryAccess for MBC1
+impl MemoryAccess for Mbc1
 {
     fn read_byte(&self, addr: u16) -> u8
     {
         match addr {
-            0x0000..=0x3FFF => self.read_rom_x0(addr),
+            0x0000..=0x3FFF => self.rom_0x.read_byte(addr),
             0x4000..=0x7FFF => {
-                let bank = (self.rom_bank - 1) as usize;
-                self.swap_rom[bank].read_byte(addr)
+                let bank = self.current_rom_bank();
+                self.rom[bank - 1].read_byte(addr)
             }
             0xA000..=0xBFFF if self.ram_enabled => {
-                let bank = match self.banking_mode {
-                    1 => self.ram_bank as usize,
-                    _ => 0,
-                };
-                self.swap_ram[bank].read_byte(addr)
+                let bank = self.current_ram_bank();
+                self.ram[bank].read_byte(addr)
             }
             _ => 0xFF,
         }
@@ -95,30 +107,23 @@ impl MemoryAccess for MBC1
     {
         match addr {
             0x0000..=0x1FFF => {
-                self.ram_enabled = val & 0xF == 0xA;
+                self.ram_enabled = (val & 0xF) == 0xA;
             }
             0x2000..=0x3FFF => {
-                let mut lower = val & 0x1F;
-
-                if lower == 0 {
-                    lower = 1;
-                }
-                self.rom_bank = ((self.rom_bank & 0x60) | lower) % self.rom_banks();
+                self.rom_lower_rom_bits = match val & 0x1F {
+                    0 => 1,
+                    val => val,
+                };
             }
             0x4000..=0x5FFF => {
-                let upper = (val & 0x03) & (self.rom_banks() >> 5);
-                self.rom_bank = self.rom_bank & 0x1F | (upper << 5);
-                self.ram_bank = val & 0x03;
+                self.ram_upper_rom_bits = val & 0x03;
             }
             0x6000..=0x7FFF => {
-                self.banking_mode = val & 0x01;
+                self.in_ram_banking_mode = (val & 0x01) != 0;
             }
             0xA000..=0xBFFF if self.ram_enabled => {
-                let bank = match self.banking_mode {
-                    1 => self.ram_bank as usize,
-                    _ => 0,
-                };
-                self.swap_ram[bank].write_byte(addr, val);
+                let bank = self.current_ram_bank();
+                self.ram[bank].write_byte(addr, val);
             }
             _ => {}
         }

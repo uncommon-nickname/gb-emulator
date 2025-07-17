@@ -22,9 +22,8 @@ impl<'a> MemoryAccess for MMU<'a>
     fn read_byte(&self, addr: u16) -> u8
     {
         match addr {
-            0x0000..=0x7FFF => self.bus.cartridge.read_byte(addr),
+            0x0000..=0x7FFF | 0xA000..=0xBFFF => self.bus.cartridge.read_byte(addr),
             0x8000..=0x9FFF => self.bus.vram.read_byte(addr),
-            0xA000..=0xBFFF => self.bus.cartridge.read_byte(addr),
             0xC000..=0xDFFF => self.bus.wram.read_byte(addr),
             _ => unimplemented!(),
         }
@@ -33,9 +32,8 @@ impl<'a> MemoryAccess for MMU<'a>
     fn write_byte(&mut self, addr: u16, val: u8)
     {
         match addr {
-            0x0000..=0x7FFF => self.bus.cartridge.write_byte(addr, val),
+            0x0000..=0x7FFF | 0xA000..=0xBFFF => self.bus.cartridge.write_byte(addr, val),
             0x8000..=0x9FFF => self.bus.vram.write_byte(addr, val),
-            0xA000..=0xBFFF => self.bus.cartridge.write_byte(addr, val),
             0xC000..=0xDFFF => self.bus.wram.write_byte(addr, val),
             _ => unimplemented!(),
         }

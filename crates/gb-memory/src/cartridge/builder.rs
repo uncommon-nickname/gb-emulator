@@ -8,17 +8,17 @@ use std::path::PathBuf;
 use crate::MemoryAccess;
 use crate::cartridge::errors::CartridgeError;
 use crate::cartridge::header::{CartridgeType, Header};
-use crate::cartridge::mbc::mbc0::MBC0;
-use crate::cartridge::mbc::mbc1::MBC1;
-
-pub struct Cartridge
-{
-    pub header: Header,
-    mbc: Box<dyn MemoryAccess>,
-}
+use crate::cartridge::mbc::mbc0::Mbc0;
+use crate::cartridge::mbc::mbc1::Mbc1;
 
 // TODO: Detect which cartridge has a persistent `RAM` and save the state to the save file.
 // TODO: Validate the checksum.
+
+pub struct Cartridge
+{
+    mbc: Box<dyn MemoryAccess>,
+}
+
 impl Cartridge
 {
     pub fn from_file<P>(path: P) -> Result<Self, CartridgeError>
@@ -29,13 +29,9 @@ impl Cartridge
         File::open(path.into())?.read_to_end(&mut buf)?;
 
         let header = Header::new(&buf)?;
+        let mbc = mbc_factory(&header, buf);
 
-        let mbc: Box<dyn MemoryAccess> = match header.cartridge_type {
-            CartridgeType::Mbc0 => Box::new(MBC0::new(buf)),
-            _ => Box::new(MBC1::new(buf, header.ram_banks)),
-        };
-
-        Ok(Self { header, mbc })
+        Ok(Self { mbc })
     }
 }
 
@@ -49,5 +45,13 @@ impl MemoryAccess for Cartridge
     fn write_byte(&mut self, addr: u16, val: u8)
     {
         self.mbc.write_byte(addr, val);
+    }
+}
+
+fn mbc_factory(header: &Header, rom: Vec<u8>) -> Box<dyn MemoryAccess>
+{
+    match header.cartridge_type {
+        CartridgeType::Mbc0 => Box::new(Mbc0::new(rom)),
+        _ => Box::new(Mbc1::new(header, rom)),
     }
 }

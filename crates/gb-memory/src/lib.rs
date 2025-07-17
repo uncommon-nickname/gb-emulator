@@ -4,10 +4,12 @@
 mod bus;
 mod cartridge;
 mod chunk;
+mod consts;
 mod mmu;
 
 pub use bus::MemoryBus;
 pub use cartridge::builder::Cartridge;
+pub use cartridge::header::Header;
 pub use mmu::MMU;
 
 pub trait MemoryAccess

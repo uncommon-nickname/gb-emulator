@@ -5,12 +5,12 @@ use crate::MemoryAccess;
 use crate::chunk::MemoryChunk;
 
 #[derive(Debug)]
-pub struct MBC0
+pub struct Mbc0
 {
     rom: MemoryChunk<0x0000, 0x7FFF>,
 }
 
-impl MBC0
+impl Mbc0
 {
     pub fn new(rom: Vec<u8>) -> Self
     {
@@ -19,7 +19,7 @@ impl MBC0
     }
 }
 
-impl MemoryAccess for MBC0
+impl MemoryAccess for Mbc0
 {
     // `MBC0` allows read-only access to the `ROM` data.
     fn read_byte(&self, addr: u16) -> u8

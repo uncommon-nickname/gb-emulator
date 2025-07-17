@@ -5,9 +5,10 @@ use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
 use crate::cartridge::errors::CartridgeError;
+use crate::consts::rom;
 
 #[repr(u8)]
-#[derive(Clone, Copy, FromPrimitive)]
+#[derive(Clone, Copy, Debug, FromPrimitive)]
 pub enum CgbFlag
 {
     SupportsEnhancements = 0x80,
@@ -15,7 +16,7 @@ pub enum CgbFlag
 }
 
 #[repr(u8)]
-#[derive(Clone, Copy, FromPrimitive)]
+#[derive(Clone, Copy, Debug, FromPrimitive)]
 pub enum CartridgeType
 {
     Mbc0                  = 0x00,
@@ -24,6 +25,7 @@ pub enum CartridgeType
     Mbc1WithRamAndBattery = 0x03,
 }
 
+#[derive(Debug)]
 pub struct Header
 {
     pub title: String,
@@ -38,17 +40,17 @@ impl Header
 {
     pub fn new(rom: &[u8]) -> Result<Self, CartridgeError>
     {
-        if rom.len() < 0x150 {
+        if rom.len() < rom::HEADER_SIZE {
             return Err(CartridgeError::Header(
                 "Rom is too short to contain a header.",
             ));
         }
         let title = read_game_title(rom);
 
-        let cgb = CgbFlag::from_u8(rom[0x143])
+        let cgb = CgbFlag::from_u8(rom[rom::CGB_FLAG])
             .ok_or(CartridgeError::Header("Invalid value of cgb flag."))?;
 
-        let cartridge_type = CartridgeType::from_u8(rom[0x147])
+        let cartridge_type = CartridgeType::from_u8(rom[rom::CARTRIDGE_TYPE])
             .ok_or(CartridgeError::Header("Invalid value for catridge type."))?;
 
         let rom_banks = read_rom_size(rom);
@@ -60,20 +62,20 @@ impl Header
             cartridge_type,
             rom_banks,
             ram_banks,
-            header_checksum: rom[0x14D],
+            header_checksum: rom[rom::CHECKSUM],
         })
     }
 }
 
 fn read_game_title(rom: &[u8]) -> String
 {
-    let title_bytes = &rom[0x134..0x144];
+    let title_bytes = &rom[rom::TITLE_START..rom::TITLE_END];
     String::from_utf8_lossy(title_bytes).to_string()
 }
 
 fn read_rom_size(rom: &[u8]) -> usize
 {
-    match rom[0x148] {
+    match rom[rom::ROM_SIZE] {
         0x00 => 2,
         0x01 => 4,
         0x02 => 8,
@@ -89,7 +91,7 @@ fn read_rom_size(rom: &[u8]) -> usize
 
 fn read_ram_size(rom: &[u8]) -> usize
 {
-    match rom[0x149] {
+    match rom[rom::RAM_SIZE] {
         0x00 => 0,
         0x02 => 1,
         0x03 => 4,
