@@ -15,6 +15,23 @@ impl<'a> MMU<'a>
     {
         Self { bus }
     }
+
+    pub fn read_word(&self, addr: u16) -> u16
+    {
+        let a = self.read_byte(addr) as u16;
+        let b = self.read_byte(addr + 1) as u16;
+
+        a | (b << 8)
+    }
+
+    pub fn write_word(&mut self, addr: u16, val: u16)
+    {
+        let a = (val & 0xFF) as u8;
+        let b = (val >> 8) as u8;
+
+        self.write_byte(addr, a);
+        self.write_byte(addr + 1, b);
+    }
 }
 
 impl<'a> MemoryAccess for MMU<'a>

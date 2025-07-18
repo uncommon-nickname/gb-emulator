@@ -5,7 +5,7 @@ use gb_memory::MMU;
 
 use crate::cpu::Cpu;
 
-pub fn instr_nop(_opcode: u8, _mmu: &mut MMU<'_>, _cpu: &mut Cpu) -> u32
+pub fn nop(_opcode: u8, _mmu: &mut MMU<'_>, _cpu: &mut Cpu) -> u32
 {
     4
 }

@@ -31,6 +31,16 @@ impl Cpu
         byte
     }
 
+    pub fn read_pc_word(&mut self, mmu: &MMU<'_>) -> u16
+    {
+        let addr = self.registers.read_pc();
+        let word = mmu.read_word(addr);
+
+        self.registers.increment_pc(2);
+
+        word
+    }
+
     pub fn step(&mut self, mut mmu: MMU<'_>) -> u32
     {
         let opcode = self.read_pc_byte(&mmu);

@@ -4,13 +4,17 @@
 use gb_memory::MMU;
 
 use crate::cpu::Cpu;
-use crate::instructions::control::instr_nop;
+use crate::instructions::control::*;
+use crate::instructions::load_16bit::*;
 
-type OpCode = u8;
-type Ticks = u32;
-type InstructionFn = fn(OpCode, &mut MMU<'_>, &mut Cpu) -> Ticks;
+pub type OpCode = u8;
+pub type Ticks = u32;
+pub type InstructionFn = fn(OpCode, &mut MMU<'_>, &mut Cpu) -> Ticks;
 
-pub const LOOKUP_TABLE: [InstructionFn; 1] = [
-    //  0
-    instr_nop, // 0
+// NOTE: 18.07.2025
+// I want this formatted in the same way that the opcode table
+// is formatted for better readability.
+#[rustfmt::skip]
+pub const LOOKUP_TABLE: [InstructionFn; 2] = [
+    nop, ld_bc_n16
 ];
