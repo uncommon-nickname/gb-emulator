@@ -9,8 +9,9 @@ use crate::registers::enums::RegisterU16;
 macro_rules! make_ld_n16 {
     ($($name:ident, $reg:expr);* $(;)?) => {
         $(
-            pub fn $name(_opcode: u8, mmu: &mut MMU<'_>, cpu: &mut Cpu) -> u32 {
-                let val = cpu.read_pc_word(mmu);
+            pub fn $name(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+            {
+                let val = cpu.read_pc_word(&mmu);
                 cpu.registers.write_u16($reg, val);
                 12
             }

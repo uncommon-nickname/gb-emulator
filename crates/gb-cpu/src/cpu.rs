@@ -41,11 +41,11 @@ impl Cpu
         word
     }
 
-    pub fn step(&mut self, mut mmu: MMU<'_>) -> u32
+    pub fn step(&mut self, mmu: MMU<'_>) -> u32
     {
         let opcode = self.read_pc_byte(&mmu);
         let instr_callable = LOOKUP_TABLE[opcode as usize];
 
-        instr_callable(opcode, &mut mmu, self)
+        instr_callable(opcode, mmu, self)
     }
 }
