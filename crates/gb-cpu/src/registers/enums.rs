@@ -30,6 +30,15 @@ pub enum RegisterGroup
     PushPop,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum Flag
+{
+    Z = 0x80,
+    N = 0x40,
+    H = 0x20,
+    C = 0x10,
+}
+
 impl RegisterU8
 {
     pub fn from_bits(bits: u8) -> Self

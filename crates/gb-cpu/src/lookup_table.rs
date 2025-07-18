@@ -4,6 +4,7 @@
 use gb_memory::MMU;
 
 use crate::cpu::Cpu;
+use crate::instructions::arithmetic_8bit::*;
 use crate::instructions::arithmetic_16bit::*;
 use crate::instructions::control::*;
 use crate::instructions::load_8bit::*;
@@ -17,6 +18,6 @@ pub type InstructionFn = fn(OpCode, MMU<'_>, &mut Cpu) -> Ticks;
 // I want this formatted in the same way that the opcode table
 // is formatted for better readability.
 #[rustfmt::skip]
-pub const LOOKUP_TABLE: [InstructionFn; 4] = [
-    nop, ld_bc_n16, ld_bc_a, inc_bc_n16,
+pub const LOOKUP_TABLE: [InstructionFn; 5] = [
+    nop, ld_bc_n16, ld_bc_a, inc_bc_n16, inc_b_n8,
 ];

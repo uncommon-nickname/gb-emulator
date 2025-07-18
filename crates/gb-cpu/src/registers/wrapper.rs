@@ -1,7 +1,7 @@
 // Copyright: (c) 2025, Wiktor Nowak
 // GNU General Public License v3.0 (see LICENSE.md or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-use crate::registers::enums::{RegisterU8, RegisterU16};
+use crate::registers::enums::{Flag, RegisterU8, RegisterU16};
 
 #[derive(Debug, Default)]
 pub struct Registers
@@ -49,23 +49,6 @@ impl Registers
         }
     }
 
-    pub fn read_u16(&self, reg: RegisterU16) -> u16
-    {
-        match reg {
-            RegisterU16::AF => make_u16(self.a, self.f),
-            RegisterU16::BC => make_u16(self.b, self.c),
-            RegisterU16::DE => make_u16(self.d, self.e),
-            RegisterU16::HL => make_u16(self.h, self.l),
-            RegisterU16::SP => self.sp,
-        }
-    }
-
-    #[inline]
-    pub fn read_pc(&self) -> u16
-    {
-        self.pc
-    }
-
     pub fn write_u8(&mut self, reg: RegisterU8, val: u8)
     {
         match reg {
@@ -76,6 +59,17 @@ impl Registers
             RegisterU8::E => self.e = val,
             RegisterU8::H => self.h = val,
             RegisterU8::L => self.l = val,
+        }
+    }
+
+    pub fn read_u16(&self, reg: RegisterU16) -> u16
+    {
+        match reg {
+            RegisterU16::AF => make_u16(self.a, self.f),
+            RegisterU16::BC => make_u16(self.b, self.c),
+            RegisterU16::DE => make_u16(self.d, self.e),
+            RegisterU16::HL => make_u16(self.h, self.l),
+            RegisterU16::SP => self.sp,
         }
     }
 
@@ -95,9 +89,51 @@ impl Registers
     }
 
     #[inline]
+    pub fn read_pc(&self) -> u16
+    {
+        self.pc
+    }
+
+    #[inline]
     pub fn increment_pc(&mut self, by: u16)
     {
         self.pc = self.pc.wrapping_add(by);
+    }
+
+    pub fn set_flag(&mut self, flag: Flag, val: bool)
+    {
+        let bits = flag as u8;
+
+        if val {
+            self.f |= bits;
+        } else {
+            self.f &= bits;
+        }
+        self.f &= 0xF0;
+    }
+
+    pub fn increment_u8(&mut self, reg: RegisterU8)
+    {
+        let old = self.read_u8(reg);
+        let new = old.wrapping_add(1);
+
+        self.set_flag(Flag::Z, new == 0);
+        self.set_flag(Flag::N, false);
+        self.set_flag(Flag::H, (old & 0x0F) == 0x0F);
+
+        self.write_u8(reg, new);
+    }
+
+    pub fn decrement_u8(&mut self, reg: RegisterU8)
+    {
+        let old = self.read_u8(reg);
+        let new = old.wrapping_sub(1);
+
+        self.set_flag(Flag::Z, new == 0);
+        self.set_flag(Flag::N, true);
+        self.set_flag(Flag::H, (old & 0x0F) == 0x00);
+
+        self.write_u8(reg, new);
     }
 }
 
