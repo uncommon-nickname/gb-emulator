@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/gb-core", "crates/gb-memory"]
+members = ["crates/gb-core", "crates/gb-cpu", "crates/gb-memory"]
 
 [workspace.dependencies]
 num-derive = { version = "0.4.2", default-features = false }

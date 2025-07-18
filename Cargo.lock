@@ -13,6 +13,15 @@ name = "gb-core"
 version = "0.1.0"
 
 [[package]]
+name = "gb-cpu"
+version = "0.1.0"
+dependencies = [
+ "gb-memory",
+ "num-derive",
+ "num-traits",
+]
+
+[[package]]
 name = "gb-memory"
 version = "0.1.0"
 dependencies = [

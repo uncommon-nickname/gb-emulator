@@ -5,6 +5,7 @@ This is a very simple emulator created to learn more about emulator development 
 ## Resources
 
 - https://gbdev.io/pandocs
+- https://gbdev.io/gb-opcodes/optables/
 - https://axleos.com/writing-axles-gameboy-emulator
 - https://gekkio.fi/files/gb-docs/gbctr.pdf
 - https://github.com/geaz/emu-gameboy/docs

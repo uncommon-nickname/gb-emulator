@@ -1,0 +1,11 @@
+[package]
+name = "gb-cpu"
+version = "0.1.0"
+edition = "2024"
+license-file = "LICENSE.md"
+
+[dependencies]
+gb-memory = { path = "../gb-memory" }
+
+num-traits.workspace = true
+num-derive.workspace = true
