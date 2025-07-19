@@ -21,4 +21,7 @@ macro_rules! make_inc_n16 {
 
 make_inc_n16! {
     inc_bc_n16, RegisterU16::BC;
+    inc_de_n16, RegisterU16::DE;
+    inc_hl_n16, RegisterU16::HL;
+    inc_sp_n16, RegisterU16::SP;
 }

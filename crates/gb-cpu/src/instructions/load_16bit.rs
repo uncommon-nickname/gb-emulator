@@ -21,4 +21,7 @@ macro_rules! make_ld_n16 {
 
 make_ld_n16! {
     ld_bc_n16, RegisterU16::BC;
+    ld_de_n16, RegisterU16::DE;
+    ld_hl_n16, RegisterU16::HL;
+    ld_sp_n16, RegisterU16::SP;
 }

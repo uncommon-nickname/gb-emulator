@@ -3,7 +3,7 @@
 
 use gb_memory::{MMU, MemoryAccess};
 
-use crate::lookup_table::LOOKUP_TABLE;
+use crate::lookup_table::OPCODE_LOOKUP_TABLE;
 use crate::registers::wrapper::Registers;
 
 #[derive(Debug, Default)]
@@ -44,7 +44,7 @@ impl Cpu
     pub fn step(&mut self, mmu: MMU<'_>) -> u32
     {
         let opcode = self.read_pc_byte(&mmu);
-        let instr_callable = LOOKUP_TABLE[opcode as usize];
+        let instr_callable = OPCODE_LOOKUP_TABLE[opcode as usize];
 
         instr_callable(opcode, mmu, self)
     }

@@ -5,6 +5,11 @@ use gb_memory::MMU;
 
 use crate::cpu::Cpu;
 
+pub fn unsupported(_opcode: u8, _mmu: MMU<'_>, _cpu: &mut Cpu) -> u32
+{
+    panic!("This opcode is unsupported.")
+}
+
 pub fn nop(_opcode: u8, _mmu: MMU<'_>, _cpu: &mut Cpu) -> u32
 {
     4
