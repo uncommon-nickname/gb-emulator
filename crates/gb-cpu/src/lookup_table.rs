@@ -30,10 +30,10 @@ pub type InstructionFn = fn(OpCode, MMU<'_>, &mut Cpu) -> Ticks;
 #[rustfmt::skip]
 pub const OPCODE_LOOKUP_TABLE: [InstructionFn; 256] = [
 /*               x0          x1           x2           x3           x4           x5           x6           x7           x8           x9           xA           xB           xC           xD           xE           xF      */
-/* 0x */    nop        , ld_bc_n16  , ld_bc_a    , inc_bc_n16 , inc_b_n8   , dec_b_n8   , unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, inc_c_n8   , dec_c_n8   , unsupported, unsupported,
-/* 1x */    unsupported, ld_de_n16  , unsupported, inc_de_n16 , inc_d_n8   , dec_d_n8   , unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, inc_e_n8   , dec_e_n8   , unsupported, unsupported,
-/* 2x */    unsupported, ld_hl_n16  , unsupported, inc_hl_n16 , inc_h_n8   , dec_h_n8   , unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, inc_l_n8   , dec_l_n8   , unsupported, unsupported,
-/* 3x */    unsupported, ld_sp_n16  , unsupported, inc_sp_n16 , unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, inc_a_n8   , dec_a_n8   , unsupported, unsupported,
+/* 0x */    nop        , ld_bc_n16  , ld_bc_a    , inc_bc     , inc_b      , dec_b      , ld_b_n8    , unsupported, unsupported, unsupported, ld_a_bc    , unsupported, inc_c      , dec_c      , ld_c_n8    , unsupported,
+/* 1x */    unsupported, ld_de_n16  , ld_de_a    , inc_de     , inc_d      , dec_d      , ld_d_n8    , unsupported, unsupported, unsupported, ld_a_de    , unsupported, inc_e      , dec_e      , ld_e_n8    , unsupported,
+/* 2x */    unsupported, ld_hl_n16  , ldi_hl_a   , inc_hl     , inc_h      , dec_h      , ld_h_n8    , unsupported, unsupported, unsupported, ldi_a_hl   , unsupported, inc_l      , dec_l      , ld_l_n8    , unsupported,
+/* 3x */    unsupported, ld_sp_n16  , ldd_hl_a   , inc_sp     , inci_hl    , decd_hl    , ld_hl_n8   , unsupported, unsupported, unsupported, ldd_a_hl   , unsupported, inc_a      , dec_a      , ld_a_n8    , unsupported,
 /* 4x */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported,
 /* 5x */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported,
 /* 6x */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported,

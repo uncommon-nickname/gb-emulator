@@ -21,6 +21,7 @@ pub enum RegisterU16
     DE,
     HL,
     SP,
+    PC,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]

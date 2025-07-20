@@ -4,6 +4,7 @@
 use gb_memory::{MMU, MemoryAccess};
 
 use crate::lookup_table::OPCODE_LOOKUP_TABLE;
+use crate::registers::enums::RegisterU16;
 use crate::registers::wrapper::Registers;
 
 #[derive(Debug, Default)]
@@ -23,20 +24,22 @@ impl Cpu
 
     pub fn read_pc_byte(&mut self, mmu: &MMU<'_>) -> u8
     {
-        let addr = self.registers.read_pc();
+        let addr = self.registers.read_u16(RegisterU16::PC);
         let byte = mmu.read_byte(addr);
 
-        self.registers.increment_pc(1);
+        let next = addr.wrapping_add(1);
+        self.registers.write_u16(RegisterU16::PC, next);
 
         byte
     }
 
     pub fn read_pc_word(&mut self, mmu: &MMU<'_>) -> u16
     {
-        let addr = self.registers.read_pc();
+        let addr = self.registers.read_u16(RegisterU16::PC);
         let word = mmu.read_word(addr);
 
-        self.registers.increment_pc(2);
+        let next = addr.wrapping_add(2);
+        self.registers.write_u16(RegisterU16::PC, next);
 
         word
     }

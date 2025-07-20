@@ -70,6 +70,7 @@ impl Registers
             RegisterU16::DE => make_u16(self.d, self.e),
             RegisterU16::HL => make_u16(self.h, self.l),
             RegisterU16::SP => self.sp,
+            RegisterU16::PC => self.pc,
         }
     }
 
@@ -85,19 +86,8 @@ impl Registers
             RegisterU16::DE => (self.d, self.e) = make_u8(val),
             RegisterU16::HL => (self.h, self.l) = make_u8(val),
             RegisterU16::SP => self.sp = val,
+            RegisterU16::PC => self.pc = val,
         }
-    }
-
-    #[inline]
-    pub fn read_pc(&self) -> u16
-    {
-        self.pc
-    }
-
-    #[inline]
-    pub fn increment_pc(&mut self, by: u16)
-    {
-        self.pc = self.pc.wrapping_add(by);
     }
 
     pub fn set_flag(&mut self, flag: Flag, val: bool)
@@ -112,26 +102,40 @@ impl Registers
         self.f &= 0xF0;
     }
 
-    pub fn increment_u8(&mut self, reg: RegisterU8)
+    pub fn increment(&mut self, old: u8) -> u8
     {
-        let old = self.read_u8(reg);
         let new = old.wrapping_add(1);
 
         self.set_flag(Flag::Z, new == 0);
         self.set_flag(Flag::N, false);
         self.set_flag(Flag::H, (old & 0x0F) == 0x0F);
 
+        new
+    }
+
+    pub fn increment_u8(&mut self, reg: RegisterU8)
+    {
+        let old = self.read_u8(reg);
+        let new = self.increment(old);
+
         self.write_u8(reg, new);
     }
 
-    pub fn decrement_u8(&mut self, reg: RegisterU8)
+    pub fn decrement(&mut self, old: u8) -> u8
     {
-        let old = self.read_u8(reg);
         let new = old.wrapping_sub(1);
 
         self.set_flag(Flag::Z, new == 0);
         self.set_flag(Flag::N, true);
         self.set_flag(Flag::H, (old & 0x0F) == 0x00);
+
+        new
+    }
+
+    pub fn decrement_u8(&mut self, reg: RegisterU8)
+    {
+        let old = self.read_u8(reg);
+        let new = self.decrement(old);
 
         self.write_u8(reg, new);
     }
