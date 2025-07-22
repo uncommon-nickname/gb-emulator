@@ -4,14 +4,20 @@
 use gb_memory::{MMU, MemoryAccess};
 
 use crate::cpu::Cpu;
+use crate::math::{add, decrement, increment};
 use crate::registers::enums::{RegisterU8, RegisterU16};
 
-macro_rules! make_inc_n8 {
+macro_rules! make_inc_n8
+{
     ($($name:ident, $reg: expr);* $(;)?) => {
         $(
             pub fn $name(_opcode: u8, _mmu: MMU<'_>, cpu: &mut Cpu) -> u32
             {
-                cpu.registers.increment_u8($reg);
+                let old = cpu.registers.read_u8($reg);
+                let new = increment(cpu, old);
+
+                cpu.registers.write_u8($reg, new);
+
                 4
             }
         )*
@@ -33,18 +39,24 @@ pub fn inci_hl(_opcode: u8, mut mmu: MMU<'_>, cpu: &mut Cpu) -> u32
     let addr = cpu.registers.read_u16(RegisterU16::HL);
     let byte = mmu.read_byte(addr);
 
-    let new = cpu.registers.increment(byte);
+    let new = increment(cpu, byte);
+
     mmu.write_byte(addr, new);
 
     12
 }
 
-macro_rules! make_dec_n8 {
+macro_rules! make_dec_n8
+{
     ($($name:ident, $reg: expr);* $(;)?) => {
         $(
             pub fn $name(_opcode: u8, _mmu: MMU<'_>, cpu: &mut Cpu) -> u32
             {
-                cpu.registers.decrement_u8($reg);
+                let old = cpu.registers.read_u8($reg);
+                let new = decrement(cpu, old);
+
+                cpu.registers.write_u8($reg, new);
+
                 4
             }
         )*
@@ -66,8 +78,51 @@ pub fn decd_hl(_opcode: u8, mut mmu: MMU<'_>, cpu: &mut Cpu) -> u32
     let addr = cpu.registers.read_u16(RegisterU16::HL);
     let byte = mmu.read_byte(addr);
 
-    let new = cpu.registers.decrement(byte);
+    let new = decrement(cpu, byte);
+
     mmu.write_byte(addr, new);
 
     12
+}
+
+macro_rules! make_add_u8
+{
+    ($($name:ident, $reg: expr);* $(;)?) => {
+        $(
+            pub fn $name(_opcode: u8, _mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+            {
+                let old = cpu.registers.read_u8(RegisterU8::A);
+                let reg = cpu.registers.read_u8($reg);
+
+                let new = add(cpu, old, reg);
+
+                cpu.registers.write_u8(RegisterU8::A, new);
+
+                4
+            }
+        )*
+    };
+}
+
+make_add_u8! {
+    add_a_b, RegisterU8::B;
+    add_a_c, RegisterU8::C;
+    add_a_d, RegisterU8::D;
+    add_a_e, RegisterU8::E;
+    add_a_h, RegisterU8::H;
+    add_a_l, RegisterU8::L;
+    add_a_a, RegisterU8::A;
+}
+
+pub fn add_a_hl(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+{
+    let addr = cpu.registers.read_u16(RegisterU16::HL);
+    let old = cpu.registers.read_u8(RegisterU8::A);
+    let byte = mmu.read_byte(addr);
+
+    let new = add(cpu, old, byte);
+
+    cpu.registers.write_u8(RegisterU8::A, new);
+
+    8
 }

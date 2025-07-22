@@ -90,7 +90,8 @@ pub fn ldd_a_hl(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
     8
 }
 
-macro_rules! make_ld_n8 {
+macro_rules! make_ld_n8
+{
     ($($name:ident, $reg: expr);* $(;)?) => {
         $(
             pub fn $name(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
@@ -123,8 +124,9 @@ pub fn ld_hl_n8(_opcode: u8, mut mmu: MMU<'_>, cpu: &mut Cpu) -> u32
     12
 }
 
-macro_rules! make_ld_u8_u8 {
-        ($($name:ident, $to: expr, $from: expr);* $(;)?) => {
+macro_rules! make_ld_u8_u8
+{
+    ($($name:ident, $to: expr, $from: expr);* $(;)?) => {
         $(
             pub fn $name(_opcode: u8, _mmu: MMU<'_>, cpu: &mut Cpu) -> u32
             {
@@ -195,8 +197,9 @@ make_ld_u8_u8! {
     ld_a_a, RegisterU8::A, RegisterU8::A;
 }
 
-macro_rules! make_ld_u8_hl {
-        ($($name:ident, $reg: expr);* $(;)?) => {
+macro_rules! make_ld_u8_hl
+{
+    ($($name:ident, $reg: expr);* $(;)?) => {
         $(
             pub fn $name(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
             {
@@ -221,8 +224,9 @@ make_ld_u8_hl! {
     ld_a_hl, RegisterU8::A;
 }
 
-macro_rules! make_ld_hl_u8 {
-        ($($name:ident, $reg: expr);* $(;)?) => {
+macro_rules! make_ld_hl_u8
+{
+    ($($name:ident, $reg: expr);* $(;)?) => {
         $(
             pub fn $name(_opcode: u8, mut mmu: MMU<'_>, cpu: &mut Cpu) -> u32
             {

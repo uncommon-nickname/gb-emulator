@@ -49,6 +49,30 @@ impl Registers
         }
     }
 
+    pub fn read_u16(&self, reg: RegisterU16) -> u16
+    {
+        match reg {
+            RegisterU16::AF => make_u16(self.a, self.f),
+            RegisterU16::BC => make_u16(self.b, self.c),
+            RegisterU16::DE => make_u16(self.d, self.e),
+            RegisterU16::HL => make_u16(self.h, self.l),
+            RegisterU16::SP => self.sp,
+            RegisterU16::PC => self.pc,
+        }
+    }
+
+    pub fn set_flag(&mut self, flag: Flag, val: bool)
+    {
+        let bits = flag as u8;
+
+        if val {
+            self.f |= bits;
+        } else {
+            self.f &= bits;
+        }
+        self.f &= 0xF0;
+    }
+
     pub fn write_u8(&mut self, reg: RegisterU8, val: u8)
     {
         match reg {
@@ -59,18 +83,6 @@ impl Registers
             RegisterU8::E => self.e = val,
             RegisterU8::H => self.h = val,
             RegisterU8::L => self.l = val,
-        }
-    }
-
-    pub fn read_u16(&self, reg: RegisterU16) -> u16
-    {
-        match reg {
-            RegisterU16::AF => make_u16(self.a, self.f),
-            RegisterU16::BC => make_u16(self.b, self.c),
-            RegisterU16::DE => make_u16(self.d, self.e),
-            RegisterU16::HL => make_u16(self.h, self.l),
-            RegisterU16::SP => self.sp,
-            RegisterU16::PC => self.pc,
         }
     }
 
@@ -88,56 +100,6 @@ impl Registers
             RegisterU16::SP => self.sp = val,
             RegisterU16::PC => self.pc = val,
         }
-    }
-
-    pub fn set_flag(&mut self, flag: Flag, val: bool)
-    {
-        let bits = flag as u8;
-
-        if val {
-            self.f |= bits;
-        } else {
-            self.f &= bits;
-        }
-        self.f &= 0xF0;
-    }
-
-    pub fn increment(&mut self, old: u8) -> u8
-    {
-        let new = old.wrapping_add(1);
-
-        self.set_flag(Flag::Z, new == 0);
-        self.set_flag(Flag::N, false);
-        self.set_flag(Flag::H, (old & 0x0F) == 0x0F);
-
-        new
-    }
-
-    pub fn increment_u8(&mut self, reg: RegisterU8)
-    {
-        let old = self.read_u8(reg);
-        let new = self.increment(old);
-
-        self.write_u8(reg, new);
-    }
-
-    pub fn decrement(&mut self, old: u8) -> u8
-    {
-        let new = old.wrapping_sub(1);
-
-        self.set_flag(Flag::Z, new == 0);
-        self.set_flag(Flag::N, true);
-        self.set_flag(Flag::H, (old & 0x0F) == 0x00);
-
-        new
-    }
-
-    pub fn decrement_u8(&mut self, reg: RegisterU8)
-    {
-        let old = self.read_u8(reg);
-        let new = self.decrement(old);
-
-        self.write_u8(reg, new);
     }
 }
 

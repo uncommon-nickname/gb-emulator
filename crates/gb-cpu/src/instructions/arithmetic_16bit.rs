@@ -6,7 +6,8 @@ use gb_memory::MMU;
 use crate::cpu::Cpu;
 use crate::registers::enums::RegisterU16;
 
-macro_rules! make_inc_u16 {
+macro_rules! make_inc_u16
+{
     ($($name:ident, $reg: expr);* $(;)?) => {
         $(
             pub fn $name(_opcode: u8, _mmu: MMU<'_>, cpu: &mut Cpu) -> u32
