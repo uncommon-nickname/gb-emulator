@@ -36,6 +36,12 @@ impl Registers
         }
     }
 
+    pub fn is_flag_set(&self, flag: Flag) -> bool
+    {
+        let bits = flag as u8;
+        (self.f & bits) > 0
+    }
+
     pub fn read_u8(&self, reg: RegisterU8) -> u8
     {
         match reg {

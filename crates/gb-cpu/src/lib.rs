@@ -4,7 +4,6 @@
 mod cpu;
 mod instructions;
 mod lookup_table;
-mod math;
 mod registers;
 
 pub use cpu::Cpu;

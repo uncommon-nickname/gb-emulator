@@ -38,7 +38,29 @@ pub const OPCODE_LOOKUP_TABLE: [InstructionFn; 256] = [
 /* 5x */    ld_d_b     , ld_d_c     , ld_d_d     , ld_d_e     , ld_d_h     , ld_d_l     , ld_d_hl    , ld_d_a     , ld_e_b     , ld_e_c     , ld_e_d     , ld_e_e     , ld_e_h     , ld_e_l     , ld_e_hl    , ld_e_a     ,
 /* 6x */    ld_h_b     , ld_h_c     , ld_h_d     , ld_h_e     , ld_h_h     , ld_h_l     , ld_h_hl    , ld_h_a     , ld_l_b     , ld_l_c     , ld_l_d     , ld_l_e     , ld_l_h     , ld_l_l     , ld_l_hl    , ld_l_a     ,
 /* 7x */    ld_hl_b    , ld_hl_c    , ld_hl_d    , ld_hl_e    , ld_hl_h    , ld_hl_l    , unsupported, ld_hl_a    , ld_a_b     , ld_a_c     , ld_a_d     , ld_a_e     , ld_a_h     , ld_a_l     , ld_a_hl    , ld_a_a     ,
-/* 8x */    add_a_b    , add_a_c    , add_a_d    , add_a_e    , add_a_h    , add_a_l    , add_a_hl   , add_a_a    , unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported,
+/* 8x */    add_a_b    , add_a_c    , add_a_d    , add_a_e    , add_a_h    , add_a_l    , add_a_hl   , add_a_a    , adc_a_b    , adc_a_c    , adc_a_d    , adc_a_e    , adc_a_h    , adc_a_l    , adc_a_hl   , adc_a_a    ,
+/* 9x */    sub_a_b    , sub_a_c    , sub_a_d    , sub_a_e    , sub_a_h    , sub_a_l    , sub_a_hl   , sub_a_a    , sbc_a_b    , sbc_a_c    , sbc_a_d    , sbc_a_e    , sbc_a_h    , sbc_a_l    , sbc_a_hl   , sbc_a_a    ,
+/* Ax */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported,
+/* Bx */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported,
+/* Cx */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported,
+/* Dx */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported,
+/* Ex */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported,
+/* Fx */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported,
+];
+
+#[allow(unused)]
+#[rustfmt::skip]
+pub const CB_LOOKUP_TABLE: [InstructionFn; 256] = [
+/*               x0          x1           x2           x3           x4           x5           x6           x7           x8           x9           xA           xB           xC           xD           xE           xF      */
+/* 0x */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported,
+/* 1x */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported,
+/* 2x */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported,
+/* 3x */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported,
+/* 4x */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported,
+/* 5x */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported,
+/* 6x */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported,
+/* 7x */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported,
+/* 8x */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported,
 /* 9x */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported,
 /* Ax */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported,
 /* Bx */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported,

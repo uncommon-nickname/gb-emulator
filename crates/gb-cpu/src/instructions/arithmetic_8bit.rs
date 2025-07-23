@@ -4,7 +4,6 @@
 use gb_memory::{MMU, MemoryAccess};
 
 use crate::cpu::Cpu;
-use crate::math::{add, decrement, increment};
 use crate::registers::enums::{RegisterU8, RegisterU16};
 
 macro_rules! make_inc_n8
@@ -14,9 +13,64 @@ macro_rules! make_inc_n8
             pub fn $name(_opcode: u8, _mmu: MMU<'_>, cpu: &mut Cpu) -> u32
             {
                 let old = cpu.registers.read_u8($reg);
-                let new = increment(cpu, old);
+                let new = cpu.increment(old);
 
                 cpu.registers.write_u8($reg, new);
+
+                4
+            }
+        )*
+    };
+}
+
+macro_rules! make_dec_n8
+{
+    ($($name:ident, $reg: expr);* $(;)?) => {
+        $(
+            pub fn $name(_opcode: u8, _mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+            {
+                let old = cpu.registers.read_u8($reg);
+                let new = cpu.decrement(old);
+
+                cpu.registers.write_u8($reg, new);
+
+                4
+            }
+        )*
+    };
+}
+
+macro_rules! make_add_u8
+{
+    ($($name:ident, $reg: expr, $consider_carry: expr);* $(;)?) => {
+        $(
+            pub fn $name(_opcode: u8, _mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+            {
+                let old = cpu.registers.read_u8(RegisterU8::A);
+                let reg = cpu.registers.read_u8($reg);
+
+                let new = cpu.add(old, reg, $consider_carry);
+
+                cpu.registers.write_u8(RegisterU8::A, new);
+
+                4
+            }
+        )*
+    };
+}
+
+macro_rules! make_sub_u8
+{
+    ($($name:ident, $reg: expr, $consider_carry: expr);* $(;)?) => {
+        $(
+            pub fn $name(_opcode: u8, _mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+            {
+                let old = cpu.registers.read_u8(RegisterU8::A);
+                let reg = cpu.registers.read_u8($reg);
+
+                let new = cpu.sub(old, reg, $consider_carry);
+
+                cpu.registers.write_u8(RegisterU8::A, new);
 
                 4
             }
@@ -39,28 +93,11 @@ pub fn inci_hl(_opcode: u8, mut mmu: MMU<'_>, cpu: &mut Cpu) -> u32
     let addr = cpu.registers.read_u16(RegisterU16::HL);
     let byte = mmu.read_byte(addr);
 
-    let new = increment(cpu, byte);
+    let new = cpu.increment(byte);
 
     mmu.write_byte(addr, new);
 
     12
-}
-
-macro_rules! make_dec_n8
-{
-    ($($name:ident, $reg: expr);* $(;)?) => {
-        $(
-            pub fn $name(_opcode: u8, _mmu: MMU<'_>, cpu: &mut Cpu) -> u32
-            {
-                let old = cpu.registers.read_u8($reg);
-                let new = decrement(cpu, old);
-
-                cpu.registers.write_u8($reg, new);
-
-                4
-            }
-        )*
-    };
 }
 
 make_dec_n8! {
@@ -78,40 +115,30 @@ pub fn decd_hl(_opcode: u8, mut mmu: MMU<'_>, cpu: &mut Cpu) -> u32
     let addr = cpu.registers.read_u16(RegisterU16::HL);
     let byte = mmu.read_byte(addr);
 
-    let new = decrement(cpu, byte);
+    let new = cpu.decrement(byte);
 
     mmu.write_byte(addr, new);
 
     12
 }
 
-macro_rules! make_add_u8
-{
-    ($($name:ident, $reg: expr);* $(;)?) => {
-        $(
-            pub fn $name(_opcode: u8, _mmu: MMU<'_>, cpu: &mut Cpu) -> u32
-            {
-                let old = cpu.registers.read_u8(RegisterU8::A);
-                let reg = cpu.registers.read_u8($reg);
-
-                let new = add(cpu, old, reg);
-
-                cpu.registers.write_u8(RegisterU8::A, new);
-
-                4
-            }
-        )*
-    };
-}
-
 make_add_u8! {
-    add_a_b, RegisterU8::B;
-    add_a_c, RegisterU8::C;
-    add_a_d, RegisterU8::D;
-    add_a_e, RegisterU8::E;
-    add_a_h, RegisterU8::H;
-    add_a_l, RegisterU8::L;
-    add_a_a, RegisterU8::A;
+    // Add value to the register A without considering carry.
+    add_a_b, RegisterU8::B, false;
+    add_a_c, RegisterU8::C, false;
+    add_a_d, RegisterU8::D, false;
+    add_a_e, RegisterU8::E, false;
+    add_a_h, RegisterU8::H, false;
+    add_a_l, RegisterU8::L, false;
+    add_a_a, RegisterU8::A, false;
+    // Add value to the register A considering carry.
+    adc_a_b, RegisterU8::B, true;
+    adc_a_c, RegisterU8::C, true;
+    adc_a_d, RegisterU8::D, true;
+    adc_a_e, RegisterU8::E, true;
+    adc_a_h, RegisterU8::H, true;
+    adc_a_l, RegisterU8::L, true;
+    adc_a_a, RegisterU8::A, true;
 }
 
 pub fn add_a_hl(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
@@ -120,7 +147,65 @@ pub fn add_a_hl(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
     let old = cpu.registers.read_u8(RegisterU8::A);
     let byte = mmu.read_byte(addr);
 
-    let new = add(cpu, old, byte);
+    let new = cpu.add(old, byte, false);
+
+    cpu.registers.write_u8(RegisterU8::A, new);
+
+    8
+}
+
+pub fn adc_a_hl(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+{
+    let addr = cpu.registers.read_u16(RegisterU16::HL);
+    let old = cpu.registers.read_u8(RegisterU8::A);
+    let byte = mmu.read_byte(addr);
+
+    let new = cpu.add(old, byte, true);
+
+    cpu.registers.write_u8(RegisterU8::A, new);
+
+    8
+}
+
+make_sub_u8! {
+    // Subtract value from the register A without considering carry.
+    sub_a_b, RegisterU8::B, false;
+    sub_a_c, RegisterU8::C, false;
+    sub_a_d, RegisterU8::D, false;
+    sub_a_e, RegisterU8::E, false;
+    sub_a_h, RegisterU8::H, false;
+    sub_a_l, RegisterU8::L, false;
+    sub_a_a, RegisterU8::A, false;
+    // Subtract value from the register A considering carry.
+    sbc_a_b, RegisterU8::B, true;
+    sbc_a_c, RegisterU8::C, true;
+    sbc_a_d, RegisterU8::D, true;
+    sbc_a_e, RegisterU8::E, true;
+    sbc_a_h, RegisterU8::H, true;
+    sbc_a_l, RegisterU8::L, true;
+    sbc_a_a, RegisterU8::A, true;
+}
+
+pub fn sub_a_hl(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+{
+    let addr = cpu.registers.read_u16(RegisterU16::HL);
+    let old = cpu.registers.read_u8(RegisterU8::A);
+    let byte = mmu.read_byte(addr);
+
+    let new = cpu.sub(old, byte, false);
+
+    cpu.registers.write_u8(RegisterU8::A, new);
+
+    8
+}
+
+pub fn sbc_a_hl(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+{
+    let addr = cpu.registers.read_u16(RegisterU16::HL);
+    let old = cpu.registers.read_u8(RegisterU8::A);
+    let byte = mmu.read_byte(addr);
+
+    let new = cpu.sub(old, byte, true);
 
     cpu.registers.write_u8(RegisterU8::A, new);
 
