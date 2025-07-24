@@ -78,6 +78,25 @@ macro_rules! make_sub_u8
     };
 }
 
+macro_rules! make_and_u8
+{
+    ($($name:ident, $reg: expr);* $(;)?) => {
+        $(
+            pub fn $name(_opcode: u8, _mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+            {
+                let old = cpu.registers.read_u8(RegisterU8::A);
+                let reg = cpu.registers.read_u8($reg);
+
+                let new = cpu.and(old, reg);
+
+                cpu.registers.write_u8(RegisterU8::A, new);
+
+                4
+            }
+        )*
+    };
+}
+
 make_inc_n8! {
     inc_b, RegisterU8::B;
     inc_d, RegisterU8::D;
@@ -206,6 +225,29 @@ pub fn sbc_a_hl(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
     let byte = mmu.read_byte(addr);
 
     let new = cpu.sub(old, byte, true);
+
+    cpu.registers.write_u8(RegisterU8::A, new);
+
+    8
+}
+
+make_and_u8! {
+    and_a_b, RegisterU8::B;
+    and_a_c, RegisterU8::C;
+    and_a_d, RegisterU8::D;
+    and_a_e, RegisterU8::E;
+    and_a_h, RegisterU8::H;
+    and_a_l, RegisterU8::L;
+    and_a_a, RegisterU8::A;
+}
+
+pub fn and_a_hl(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+{
+    let addr = cpu.registers.read_u16(RegisterU16::HL);
+    let old = cpu.registers.read_u8(RegisterU8::A);
+    let byte = mmu.read_byte(addr);
+
+    let new = cpu.and(old, byte);
 
     cpu.registers.write_u8(RegisterU8::A, new);
 

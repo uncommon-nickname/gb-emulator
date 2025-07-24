@@ -117,3 +117,47 @@ impl Cpu
         new
     }
 }
+
+impl Cpu
+{
+    pub fn and(&mut self, x: u8, y: u8) -> u8
+    {
+        let new = x & y;
+
+        self.registers.set_flag(Flag::Z, new == 0);
+        self.registers.set_flag(Flag::N, false);
+        self.registers.set_flag(Flag::H, true);
+        self.registers.set_flag(Flag::C, false);
+
+        new
+    }
+
+    pub fn or(&mut self, x: u8, y: u8) -> u8
+    {
+        let new = x | y;
+
+        self.registers.set_flag(Flag::Z, new == 0);
+        self.registers.set_flag(Flag::N, false);
+        self.registers.set_flag(Flag::H, false);
+        self.registers.set_flag(Flag::C, false);
+
+        new
+    }
+
+    pub fn xor(&mut self, x: u8, y: u8) -> u8
+    {
+        let new = x ^ y;
+
+        self.registers.set_flag(Flag::Z, new == 0);
+        self.registers.set_flag(Flag::N, false);
+        self.registers.set_flag(Flag::H, false);
+        self.registers.set_flag(Flag::C, false);
+
+        new
+    }
+
+    pub fn cp(&mut self, x: u8, y: u8)
+    {
+        self.sub(x, y, false);
+    }
+}
