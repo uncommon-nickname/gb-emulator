@@ -97,6 +97,61 @@ macro_rules! make_and_u8
     };
 }
 
+macro_rules! make_xor_u8
+{
+    ($($name:ident, $reg: expr);* $(;)?) => {
+        $(
+            pub fn $name(_opcode: u8, _mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+            {
+                let old = cpu.registers.read_u8(RegisterU8::A);
+                let reg = cpu.registers.read_u8($reg);
+
+                let new = cpu.xor(old, reg);
+
+                cpu.registers.write_u8(RegisterU8::A, new);
+
+                4
+            }
+        )*
+    };
+}
+
+macro_rules! make_or_u8
+{
+    ($($name:ident, $reg: expr);* $(;)?) => {
+        $(
+            pub fn $name(_opcode: u8, _mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+            {
+                let old = cpu.registers.read_u8(RegisterU8::A);
+                let reg = cpu.registers.read_u8($reg);
+
+                let new = cpu.or(old, reg);
+
+                cpu.registers.write_u8(RegisterU8::A, new);
+
+                4
+            }
+        )*
+    };
+}
+
+macro_rules! make_cp_u8
+{
+    ($($name:ident, $reg: expr);* $(;)?) => {
+        $(
+            pub fn $name(_opcode: u8, _mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+            {
+                let old = cpu.registers.read_u8(RegisterU8::A);
+                let reg = cpu.registers.read_u8($reg);
+
+                cpu.cp(old, reg);
+
+                4
+            }
+        )*
+    };
+}
+
 make_inc_n8! {
     inc_b, RegisterU8::B;
     inc_d, RegisterU8::D;
@@ -250,6 +305,167 @@ pub fn and_a_hl(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
     let new = cpu.and(old, byte);
 
     cpu.registers.write_u8(RegisterU8::A, new);
+
+    8
+}
+
+make_xor_u8! {
+    xor_a_b, RegisterU8::B;
+    xor_a_c, RegisterU8::C;
+    xor_a_d, RegisterU8::D;
+    xor_a_e, RegisterU8::E;
+    xor_a_h, RegisterU8::H;
+    xor_a_l, RegisterU8::L;
+    xor_a_a, RegisterU8::A;
+}
+
+pub fn xor_a_hl(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+{
+    let addr = cpu.registers.read_u16(RegisterU16::HL);
+    let old = cpu.registers.read_u8(RegisterU8::A);
+    let byte = mmu.read_byte(addr);
+
+    let new = cpu.xor(old, byte);
+
+    cpu.registers.write_u8(RegisterU8::A, new);
+
+    8
+}
+
+make_or_u8! {
+    or_a_b, RegisterU8::B;
+    or_a_c, RegisterU8::C;
+    or_a_d, RegisterU8::D;
+    or_a_e, RegisterU8::E;
+    or_a_h, RegisterU8::H;
+    or_a_l, RegisterU8::L;
+    or_a_a, RegisterU8::A;
+}
+
+pub fn or_a_hl(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+{
+    let addr = cpu.registers.read_u16(RegisterU16::HL);
+    let old = cpu.registers.read_u8(RegisterU8::A);
+    let byte = mmu.read_byte(addr);
+
+    let new = cpu.or(old, byte);
+
+    cpu.registers.write_u8(RegisterU8::A, new);
+
+    8
+}
+
+make_cp_u8! {
+    cp_a_b, RegisterU8::B;
+    cp_a_c, RegisterU8::C;
+    cp_a_d, RegisterU8::D;
+    cp_a_e, RegisterU8::E;
+    cp_a_h, RegisterU8::H;
+    cp_a_l, RegisterU8::L;
+    cp_a_a, RegisterU8::A;
+}
+
+pub fn cp_a_hl(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+{
+    let addr = cpu.registers.read_u16(RegisterU16::HL);
+    let old = cpu.registers.read_u8(RegisterU8::A);
+    let byte = mmu.read_byte(addr);
+
+    cpu.cp(old, byte);
+
+    8
+}
+
+pub fn add_a_n8(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+{
+    let old = cpu.registers.read_u8(RegisterU8::A);
+    let byte = cpu.read_pc_byte(&mmu);
+
+    let new = cpu.add(old, byte, false);
+
+    cpu.registers.write_u8(RegisterU8::A, new);
+
+    8
+}
+
+pub fn sub_a_n8(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+{
+    let old = cpu.registers.read_u8(RegisterU8::A);
+    let byte = cpu.read_pc_byte(&mmu);
+
+    let new = cpu.sub(old, byte, false);
+
+    cpu.registers.write_u8(RegisterU8::A, new);
+
+    8
+}
+
+pub fn and_a_n8(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+{
+    let old = cpu.registers.read_u8(RegisterU8::A);
+    let byte = cpu.read_pc_byte(&mmu);
+
+    let new = cpu.and(old, byte);
+
+    cpu.registers.write_u8(RegisterU8::A, new);
+
+    8
+}
+
+pub fn or_a_n8(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+{
+    let old = cpu.registers.read_u8(RegisterU8::A);
+    let byte = cpu.read_pc_byte(&mmu);
+
+    let new = cpu.or(old, byte);
+
+    cpu.registers.write_u8(RegisterU8::A, new);
+
+    8
+}
+
+pub fn adc_a_n8(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+{
+    let old = cpu.registers.read_u8(RegisterU8::A);
+    let byte = cpu.read_pc_byte(&mmu);
+
+    let new = cpu.add(old, byte, true);
+
+    cpu.registers.write_u8(RegisterU8::A, new);
+
+    8
+}
+
+pub fn sbc_a_n8(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+{
+    let old = cpu.registers.read_u8(RegisterU8::A);
+    let byte = cpu.read_pc_byte(&mmu);
+
+    let new = cpu.sub(old, byte, true);
+
+    cpu.registers.write_u8(RegisterU8::A, new);
+
+    8
+}
+
+pub fn xor_a_n8(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+{
+    let old = cpu.registers.read_u8(RegisterU8::A);
+    let byte = cpu.read_pc_byte(&mmu);
+
+    let new = cpu.xor(old, byte);
+
+    cpu.registers.write_u8(RegisterU8::A, new);
+
+    8
+}
+
+pub fn cp_a_n8(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+{
+    let old = cpu.registers.read_u8(RegisterU8::A);
+    let byte = cpu.read_pc_byte(&mmu);
+
+    cpu.cp(old, byte);
 
     8
 }

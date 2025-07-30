@@ -40,12 +40,12 @@ pub const OPCODE_LOOKUP_TABLE: [InstructionFn; 256] = [
 /* 7x */    ld_hl_b    , ld_hl_c    , ld_hl_d    , ld_hl_e    , ld_hl_h    , ld_hl_l    , halt       , ld_hl_a    , ld_a_b     , ld_a_c     , ld_a_d     , ld_a_e     , ld_a_h     , ld_a_l     , ld_a_hl    , ld_a_a     ,
 /* 8x */    add_a_b    , add_a_c    , add_a_d    , add_a_e    , add_a_h    , add_a_l    , add_a_hl   , add_a_a    , adc_a_b    , adc_a_c    , adc_a_d    , adc_a_e    , adc_a_h    , adc_a_l    , adc_a_hl   , adc_a_a    ,
 /* 9x */    sub_a_b    , sub_a_c    , sub_a_d    , sub_a_e    , sub_a_h    , sub_a_l    , sub_a_hl   , sub_a_a    , sbc_a_b    , sbc_a_c    , sbc_a_d    , sbc_a_e    , sbc_a_h    , sbc_a_l    , sbc_a_hl   , sbc_a_a    ,
-/* Ax */    and_a_b    , and_a_c    , and_a_d    , and_a_e    , and_a_h    , and_a_l    , and_a_hl   , and_a_a    , unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported,
-/* Bx */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported,
-/* Cx */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported,
-/* Dx */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported,
-/* Ex */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported,
-/* Fx */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported,
+/* Ax */    and_a_b    , and_a_c    , and_a_d    , and_a_e    , and_a_h    , and_a_l    , and_a_hl   , and_a_a    , xor_a_b    , xor_a_c    , xor_a_d    , xor_a_e    , xor_a_h    , xor_a_l    , xor_a_hl   , xor_a_a    ,
+/* Bx */    or_a_b     , or_a_c     , or_a_d     , or_a_e     , or_a_h     , or_a_l     , or_a_hl    , or_a_a     , cp_a_b     , cp_a_c     , cp_a_d     , cp_a_e     , cp_a_h     , cp_a_l     , cp_a_hl    , cp_a_a     ,
+/* Cx */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, add_a_n8   , unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, adc_a_n8   , unsupported,
+/* Dx */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, sub_a_n8   , unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, sbc_a_n8   , unsupported,
+/* Ex */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, and_a_n8   , unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, xor_a_n8   , unsupported,
+/* Fx */    unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, or_a_n8    , unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, unsupported, cp_a_n8    , unsupported,
 ];
 
 #[allow(unused)]
