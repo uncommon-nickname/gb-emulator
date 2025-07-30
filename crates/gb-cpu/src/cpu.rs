@@ -3,7 +3,7 @@
 
 use gb_memory::{MMU, MemoryAccess};
 
-use crate::lookup_table::OPCODE_LOOKUP_TABLE;
+use crate::lookup_table::{OPCODE_LOOKUP_TABLE, Ticks};
 use crate::registers::enums::{Flag, RegisterU16};
 use crate::registers::wrapper::Registers;
 
@@ -11,6 +11,7 @@ use crate::registers::wrapper::Registers;
 pub struct Cpu
 {
     pub registers: Registers,
+    is_halted: bool,
 }
 
 impl Cpu
@@ -19,7 +20,14 @@ impl Cpu
     {
         Self {
             registers: Registers::new(),
+            is_halted: false,
         }
+    }
+
+    #[inline]
+    pub fn halt(&mut self)
+    {
+        self.is_halted = true;
     }
 
     pub fn read_pc_byte(&mut self, mmu: &MMU<'_>) -> u8
@@ -44,8 +52,15 @@ impl Cpu
         word
     }
 
-    pub fn step(&mut self, mmu: MMU<'_>) -> u32
+    pub fn step(&mut self, mmu: MMU<'_>) -> Ticks
     {
+        // If the cpu was halted, we wait for the interrupt which will
+        // wake it up. In the meantime each step should `NOT` increment
+        // the program counter. The cpu cycles should still be counted.
+        if self.is_halted {
+            return 4;
+        }
+
         let opcode = self.read_pc_byte(&mmu);
         let instr_callable = OPCODE_LOOKUP_TABLE[opcode as usize];
 
@@ -158,6 +173,8 @@ impl Cpu
 
     pub fn cp(&mut self, x: u8, y: u8)
     {
+        // Compare uses the subtraction to set the correct
+        // flags, but does not set or return any values.
         self.sub(x, y, false);
     }
 }

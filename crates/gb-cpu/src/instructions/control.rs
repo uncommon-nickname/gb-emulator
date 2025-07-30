@@ -14,3 +14,9 @@ pub fn nop(_opcode: u8, _mmu: MMU<'_>, _cpu: &mut Cpu) -> u32
 {
     4
 }
+
+pub fn halt(_opcode: u8, _mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+{
+    cpu.halt();
+    4
+}
