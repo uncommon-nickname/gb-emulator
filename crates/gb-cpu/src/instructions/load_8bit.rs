@@ -6,6 +6,68 @@ use gb_memory::{MMU, MemoryAccess};
 use crate::cpu::Cpu;
 use crate::registers::enums::{RegisterU8, RegisterU16};
 
+macro_rules! make_ld_n8
+{
+    ($($name:ident, $reg: expr);* $(;)?) => {
+        $(
+            pub fn $name(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+            {
+                let val = cpu.read_pc_byte(&mmu);
+                cpu.registers.write_u8($reg, val);
+                8
+            }
+        )*
+    };
+}
+
+macro_rules! make_ld_u8_u8
+{
+    ($($name:ident, $to: expr, $from: expr);* $(;)?) => {
+        $(
+            pub fn $name(_opcode: u8, _mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+            {
+                let val = cpu.registers.read_u8($from);
+                cpu.registers.write_u8($to, val);
+                4
+            }
+        )*
+    };
+}
+
+macro_rules! make_ld_u8_hl
+{
+    ($($name:ident, $reg: expr);* $(;)?) => {
+        $(
+            pub fn $name(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+            {
+                let addr = cpu.registers.read_u16(RegisterU16::HL);
+                let val = mmu.read_byte(addr);
+
+                cpu.registers.write_u8($reg, val);
+
+                8
+            }
+        )*
+    };
+}
+
+macro_rules! make_ld_hl_u8
+{
+    ($($name:ident, $reg: expr);* $(;)?) => {
+        $(
+            pub fn $name(_opcode: u8, mut mmu: MMU<'_>, cpu: &mut Cpu) -> u32
+            {
+                let addr = cpu.registers.read_u16(RegisterU16::HL);
+                let val = cpu.registers.read_u8($reg);
+
+                mmu.write_byte(addr, val);
+
+                8
+            }
+        )*
+    };
+}
+
 pub fn ld_bc_a(_opcode: u8, mut mmu: MMU<'_>, cpu: &mut Cpu) -> u32
 {
     let addr = cpu.registers.read_u16(RegisterU16::BC);
@@ -90,20 +152,6 @@ pub fn ldd_a_hl(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
     8
 }
 
-macro_rules! make_ld_n8
-{
-    ($($name:ident, $reg: expr);* $(;)?) => {
-        $(
-            pub fn $name(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
-            {
-                let val = cpu.read_pc_byte(&mmu);
-                cpu.registers.write_u8($reg, val);
-                8
-            }
-        )*
-    };
-}
-
 make_ld_n8! {
     ld_b_n8, RegisterU8::B;
     ld_d_n8, RegisterU8::D;
@@ -122,20 +170,6 @@ pub fn ld_hl_n8(_opcode: u8, mut mmu: MMU<'_>, cpu: &mut Cpu) -> u32
     mmu.write_byte(addr, val);
 
     12
-}
-
-macro_rules! make_ld_u8_u8
-{
-    ($($name:ident, $to: expr, $from: expr);* $(;)?) => {
-        $(
-            pub fn $name(_opcode: u8, _mmu: MMU<'_>, cpu: &mut Cpu) -> u32
-            {
-                let val = cpu.registers.read_u8($from);
-                cpu.registers.write_u8($to, val);
-                4
-            }
-        )*
-    };
 }
 
 make_ld_u8_u8! {
@@ -197,23 +231,6 @@ make_ld_u8_u8! {
     ld_a_a, RegisterU8::A, RegisterU8::A;
 }
 
-macro_rules! make_ld_u8_hl
-{
-    ($($name:ident, $reg: expr);* $(;)?) => {
-        $(
-            pub fn $name(_opcode: u8, mmu: MMU<'_>, cpu: &mut Cpu) -> u32
-            {
-                let addr = cpu.registers.read_u16(RegisterU16::HL);
-                let val = mmu.read_byte(addr);
-
-                cpu.registers.write_u8($reg, val);
-
-                8
-            }
-        )*
-    };
-}
-
 make_ld_u8_hl! {
     ld_b_hl, RegisterU8::B;
     ld_c_hl, RegisterU8::C;
@@ -222,23 +239,6 @@ make_ld_u8_hl! {
     ld_h_hl, RegisterU8::H;
     ld_l_hl, RegisterU8::L;
     ld_a_hl, RegisterU8::A;
-}
-
-macro_rules! make_ld_hl_u8
-{
-    ($($name:ident, $reg: expr);* $(;)?) => {
-        $(
-            pub fn $name(_opcode: u8, mut mmu: MMU<'_>, cpu: &mut Cpu) -> u32
-            {
-                let addr = cpu.registers.read_u16(RegisterU16::HL);
-                let val = cpu.registers.read_u8($reg);
-
-                mmu.write_byte(addr, val);
-
-                8
-            }
-        )*
-    };
 }
 
 make_ld_hl_u8! {
